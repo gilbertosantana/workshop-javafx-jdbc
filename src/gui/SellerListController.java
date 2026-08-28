@@ -1,5 +1,6 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Seller;
+import model.services.DepartmentService;
 import model.services.SellerService;
 
 public class SellerListController implements Initializable, DataChangeListener {
@@ -37,7 +39,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 	private SellerService service;
 
 	@FXML
-	private TableView<Seller> tableViewSellers;
+	private TableView<Seller> tableViewSeller;
 
 	@FXML
 	private TableColumn<Seller, Integer> tableColumnId;
@@ -49,7 +51,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 	private TableColumn<Seller, String> tableColumnEmail;
 	
 	@FXML
-	private TableColumn<Seller, Date> tableColumnBirhDate;
+	private TableColumn<Seller, Date> tableColumnBirthDate;
 	
 	@FXML
 	private TableColumn<Seller, Double> tableColumnBaseSalary;
@@ -85,13 +87,13 @@ public class SellerListController implements Initializable, DataChangeListener {
 		tableColumnId.setCellValueFactory(new PropertyValueFactory<>("id"));
 		tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
 		tableColumnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-		tableColumnBirhDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
-		Utils.formatTableColumnDate(tableColumnBirhDate, "dd/MM/yyyy");
+		tableColumnBirthDate.setCellValueFactory(new PropertyValueFactory<>("birthDate"));
+		Utils.formatTableColumnDate(tableColumnBirthDate, "dd/MM/yyyy");
 		tableColumnBaseSalary.setCellValueFactory(new PropertyValueFactory<>("baseSalary"));
 		Utils.formatTableColumnDouble(tableColumnBaseSalary, 2);
 		
 		Stage stage = (Stage) Main.getMainScene().getWindow();
-		tableViewSellers.prefHeightProperty().bind(stage.heightProperty());
+		tableViewSeller.prefHeightProperty().bind(stage.heightProperty());
 	}
 
 	public void updateTableView() {
@@ -100,36 +102,38 @@ public class SellerListController implements Initializable, DataChangeListener {
 		}
 		List<Seller> list = service.findAll();
 		obsList = FXCollections.observableArrayList(list);
-		tableViewSellers.setItems(obsList);
+		tableViewSeller.setItems(obsList);
 		initEditButtons();
 		initRemoveButtons();
 	}
 
-	private void createDialogForm(Seller obj, String absoluteName, Stage parenteStage) {
+	private void createDialogForm(Seller obj, String absoluteName, Stage parentStage) {
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			Pane pane = loader.load();
 			
 			SellerFormController controller = loader.getController();
 			controller.setSeller(obj);
-			controller.setSellerService(service);
+			controller.setServices(new SellerService(), new DepartmentService());
+			controller.loadAssociatedObjects();
 			controller.subscribeDataChangeListener(this);
 			controller.updateFormData();
 			
 			Stage dialogStage = new Stage();
-			dialogStage.setTitle("Entre Seller data");
+			dialogStage.setTitle("Enter Seller data");
 			dialogStage.setScene(new Scene(pane));
 			dialogStage.setResizable(false);
-			dialogStage.initOwner(parenteStage);
+			dialogStage.initOwner(parentStage);
 			dialogStage.initModality(Modality.WINDOW_MODAL);
 			dialogStage.showAndWait();
-		} catch (Exception e) {
+		} catch (IOException e) {
+			e.printStackTrace();
 			Alerts.showAlert("IO exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
 
 	@Override
-	public void onDataChaged() {
+	public void onDataChanged() {
 		updateTableView();
 	}
 	
@@ -173,7 +177,7 @@ public class SellerListController implements Initializable, DataChangeListener {
 	}
 	
 	private void removeEntity(Seller obj) {
-		Optional<ButtonType> result = Alerts.showConfirmation("confirmation", "Are you sure to delete?");
+		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
 		
 		if (result.get() == ButtonType.OK) {
 			if (service == null) {

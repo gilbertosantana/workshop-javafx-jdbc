@@ -82,7 +82,7 @@ public class DepartmentFormController implements Initializable {
 	
 	private void notifyDataChangeListeners() {
 		for (DataChangeListener listener : dataChangeListeners) {
-			listener.onDataChaged();
+			listener.onDataChanged();
 		}
 	}
 
@@ -91,7 +91,7 @@ public class DepartmentFormController implements Initializable {
 		
 		ValidationException exception = new ValidationException("Validation error");
 
-		obj.setId(Utils.tryParsetoInt(txtId.getText()));
+		obj.setId(Utils.tryParseToInt(txtId.getText()));
 		
 		if(txtName.getText() == null || txtName.getText().trim().equals("")) {
 			exception.addError("name", "Field can't be empty");
@@ -117,7 +117,7 @@ public class DepartmentFormController implements Initializable {
 
 	private void initializeNodes() {
 		Constraints.setTextFieldInteger(txtId);
-		Constraints.setTextFieldLength(txtName, 30);
+		Constraints.setTextFieldMaxLength(txtName, 30);
 	}
 
 	public void updateFormData() {

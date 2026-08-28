@@ -1,5 +1,6 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 	private DepartmentService service;
 
 	@FXML
-	private TableView<Department> tableViewDepartments;
+	private TableView<Department> tableViewDepartment;
 
 	@FXML
 	private TableColumn<Department, Integer> tableColumnId;
@@ -76,7 +77,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 		tableColumnName.setCellValueFactory(new PropertyValueFactory<>("name"));
 
 		Stage stage = (Stage) Main.getMainScene().getWindow();
-		tableViewDepartments.prefHeightProperty().bind(stage.heightProperty());
+		tableViewDepartment.prefHeightProperty().bind(stage.heightProperty());
 	}
 
 	public void updateTableView() {
@@ -85,7 +86,7 @@ public class DepartmentListController implements Initializable, DataChangeListen
 		}
 		List<Department> list = service.findAll();
 		obsList = FXCollections.observableArrayList(list);
-		tableViewDepartments.setItems(obsList);
+		tableViewDepartment.setItems(obsList);
 		initEditButtons();
 		initRemoveButtons();
 	}
@@ -108,13 +109,14 @@ public class DepartmentListController implements Initializable, DataChangeListen
 			dialogStage.initOwner(parenteStage);
 			dialogStage.initModality(Modality.WINDOW_MODAL);
 			dialogStage.showAndWait();
-		} catch (Exception e) {
+		} catch (IOException e) {
+			e.printStackTrace();
 			Alerts.showAlert("IO exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
 
 	@Override
-	public void onDataChaged() {
+	public void onDataChanged() {
 		updateTableView();
 	}
 	
